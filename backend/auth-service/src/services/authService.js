@@ -59,7 +59,21 @@ const loginUser = async ({ email, password }) => {
     };
 };
 
+
+
+const getCurrentUser = async (userId) => {
+
+    const user = await userModel.findUserById( userId );
+
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    return user;
+};
+
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    getCurrentUser
 };

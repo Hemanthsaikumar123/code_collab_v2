@@ -53,7 +53,34 @@ const login = async (req, res) => {
 
 };
 
+
+const getMe = async ( req, res ) => {
+
+    try {
+
+        const user = await authService.getCurrentUser(
+                req.user.id
+            );
+
+        return res.status(200).json({
+            success: true,
+            data: user
+        });
+
+    } catch (error) {
+
+        return res.status(404).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+};
+
+
 module.exports = {
     register,
-    login
+    login,
+    getMe
 };
