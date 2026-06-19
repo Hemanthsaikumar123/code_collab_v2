@@ -22,6 +22,11 @@ function Register() {
     try {
       const response = await registerUser(form);
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user",
+        JSON.stringify(
+          response.data.user
+        )
+      );       
       navigate("/dashboard");
     } 
     catch (error) {

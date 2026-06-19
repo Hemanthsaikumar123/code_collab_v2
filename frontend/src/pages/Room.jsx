@@ -13,10 +13,16 @@ function Room() {
   const [language,setLanguage] = useState("javascript");
   const [code,setCode] = useState(`console.log("Hello World");`);
   const [output,setOutput] = useState("");
-
+  const [participants,setParticipants] = useState([]);
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    socket.emit("join-room",roomId);
+   socket.emit("join-room",
+  {
+    roomId,
+    userId: user.id,
+    username: user.username
+  });
   }, [roomId]);
 
 
@@ -28,18 +34,30 @@ function Room() {
     return () => {
       socket.off("code-update");
     };
-  }, []);
-  
+    }, []);
 
-  useEffect(() => {
-    socket.on("initial-code",(code) => {
+
+    useEffect(() => {
+      socket.on("initial-code",(code) => {
         setCode(code);
-      }
-    );
-    return () => {
-      socket.off("initial-code");
-    };
-  }, []);
+        }
+      );
+
+      return () => {
+        socket.off("initial-code");
+      };
+      }, []);
+
+    useEffect(() => {
+      socket.on("participants-update",(users) => {
+          setParticipants(users);
+          }
+        );
+
+        return () => {
+          socket.off("participants-update");
+        };
+      }, []);
 
   // send updates
   const handleCodeChange = (value) => {
@@ -90,13 +108,28 @@ function Room() {
     <div>
       <h1>Room</h1>
       <p> Room Code:{" "}{room.room_code} </p>
-      <h3>Members</h3>
+      {/* <h3>Members</h3>
       <ul>
         {members.map((member) => (
           <li key={member.user_id}>
             {member.user_id}
           </li>
         ))}
+      </ul> */}
+
+      <h3>Online Users</h3>
+      <ul>
+        {participants.map(
+          (user) => (
+
+            <li
+              key={user.socketId}
+            >
+              🟢 {user.username}
+            </li>
+          )
+        )}
+
       </ul>
       <hr />
 

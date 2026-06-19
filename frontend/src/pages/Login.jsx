@@ -20,7 +20,12 @@ function Login() {
     e.preventDefault();
     try {
       const response = await loginUser(form);
-      localStorage.setItem("token",response.data.token);
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user",
+        JSON.stringify(
+          response.data.user
+        )
+      );      
       navigate("/dashboard");
     } 
     catch (error) {
