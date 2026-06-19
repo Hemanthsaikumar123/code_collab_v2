@@ -14,52 +14,136 @@ function Room() {
   const [code,setCode] = useState(`console.log("Hello World");`);
   const [output,setOutput] = useState("");
   const [participants,setParticipants] = useState([]);
+  const [messages,setMessages] = useState([]);
+  const [message,setMessage] = useState("");
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-   socket.emit("join-room",
-  {
-    roomId,
-    userId: user.id,
-    username: user.username
-  });
-  }, [roomId]);
+    socket.emit("join-room",
+    {
+      roomId,
+      userId: user.id,
+      username: user.username
+    });
+    }, [roomId]);
 
-
-   useEffect(() => {
-    socket.on("code-update",(newCode) => {
-        setCode(newCode);
+  useEffect(() => {
+    socket.on("initial-language",(language) => {
+        setLanguage(language);
       }
     );
     return () => {
-      socket.off("code-update");
+      socket.off("initial-language");
+    };
+  }, []);
+
+
+  useEffect(() => {
+    socket.on("language-update",(language) => {
+        setLanguage(language);
+      }
+    );
+    return () => {
+      socket.off("language-update");
+    };
+  }, []);
+
+
+  useEffect(() => {
+  socket.on("code-update",(newCode) => {
+      setCode(newCode);
+    }
+  );
+  return () => {
+    socket.off("code-update");
+  };
+  }, []);
+
+
+  useEffect(() => {
+    socket.on("initial-code",(code) => {
+      setCode(code);
+      }
+    );
+
+    return () => {
+      socket.off("initial-code");
     };
     }, []);
 
-
-    useEffect(() => {
-      socket.on("initial-code",(code) => {
-        setCode(code);
+  useEffect(() => {
+    socket.on("participants-update",(users) => {
+        setParticipants(users);
         }
       );
-
       return () => {
-        socket.off("initial-code");
+        socket.off("participants-update");
       };
-      }, []);
+    }, []);
 
-    useEffect(() => {
-      socket.on("participants-update",(users) => {
-          setParticipants(users);
+  useEffect(() => {
+    socket.on("output-update",output => {
+          setOutput(output);
+        }
+      );
+      return () => {
+        socket.off("output-update");
+      };
+    }, []);
+
+  useEffect(() => {
+    socket.on("initial-output",(output) => {
+          setOutput(output);
           }
         );
-
         return () => {
-          socket.off("participants-update");
+          socket.off("initial-output");
         };
       }, []);
 
+
+  useEffect(() => {
+    socket.on("initial-messages",(messages) => {
+        setMessages(messages);
+        }
+      );
+        return () => {
+          socket.off("initial-messages");
+        };
+      }, []);
+
+
+  useEffect(() => {
+    socket.on("message-received",(message) => {
+        setMessages(
+          prev => [
+            ...prev,
+            message
+          ]
+        );
+      }
+    );
+    return () => {
+      socket.off("message-received");
+    };
+  }, []);
   // send updates
+
+  const sendMessage = () => {
+    if (!message.trim())
+      return;
+
+    socket.emit("send-message",
+      {
+        roomId,
+        username:
+          user.username,
+        message
+      }
+    );
+    setMessage("");
+
+  };
   const handleCodeChange = (value) => {
 
     setCode(value);
@@ -98,6 +182,9 @@ function Room() {
     try {
       const response = await runCode(language, code);
       setOutput(response.output);
+      socket.emit("output-change",{roomId,output:response.output}
+
+);
     } 
     catch (error) {
       setOutput(error.response?.data?.message);
@@ -134,11 +221,27 @@ function Room() {
       <hr />
 
     <select
-    value={language}
-    onChange={(e) =>
-        setLanguage(
-        e.target.value)}
-    >
+        value={language}
+        onChange={(e) => {
+
+          const newLanguage =
+            e.target.value;
+
+          setLanguage(
+            newLanguage
+          );
+
+          socket.emit(
+            "language-change",
+            {
+              roomId,
+              language:
+                newLanguage
+            }
+          );
+
+        }}
+      >
 
     <option value="javascript">
         JavaScript
@@ -172,8 +275,52 @@ function Room() {
     <h3>Output</h3>
 
     <pre>{output}</pre>
-    </div>
 
+        <div>
+      <h3>Chat</h3>
+
+      <div>
+
+        {messages.map(
+          (msg, index) => (
+
+            <div key={index}>
+
+              <strong>
+                {msg.username}
+              </strong>
+
+              {" : "}
+
+              {msg.message}
+
+            </div>
+
+          )
+        )}
+
+      </div>
+
+      <input
+        value={message}
+        onChange={(e) =>
+          setMessage(
+            e.target.value
+          )
+        }
+        placeholder="Type message..."
+      />
+
+      <button
+        onClick={sendMessage}
+      >
+        Send
+      </button>
+
+    </div>
+        </div>
+
+    
   );
 }
 
