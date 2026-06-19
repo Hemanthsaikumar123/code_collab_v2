@@ -1,0 +1,36 @@
+services:
+
+  app:
+    build: . 
+    container_name: runner-service
+
+    ports:
+      - "5003:5003"
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  
+  worker:
+    build: .
+    # container_name: worker
+
+    environment:
+      EXECUTION_VOLUME: ${EXECUTION_VOLUME} 
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - execution-files:/sandbox
+
+    command: node worker.js
+
+    depends_on:
+      - rabbitmq
+
+volumes:
+  execution-files:
