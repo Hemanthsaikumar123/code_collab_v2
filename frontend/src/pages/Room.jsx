@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
-import CodeEditor from "../components/CodeEditor";
+// import CodeEditor from "../components/CodeEditor";
 import { runCode } from "../services/runnerApi";
+import Editor from "@monaco-editor/react";
 import { getRoom,getMembers } from "../services/roomApi";
+import socket from "../services/socket";
 
 function Room() {
   const { roomId } = useParams();
@@ -12,6 +13,48 @@ function Room() {
   const [language,setLanguage] = useState("javascript");
   const [code,setCode] = useState(`console.log("Hello World");`);
   const [output,setOutput] = useState("");
+
+
+  useEffect(() => {
+    socket.emit("join-room",roomId);
+  }, [roomId]);
+
+
+   useEffect(() => {
+    socket.on("code-update",(newCode) => {
+        setCode(newCode);
+      }
+    );
+    return () => {
+      socket.off("code-update");
+    };
+  }, []);
+  
+
+  useEffect(() => {
+    socket.on("initial-code",(code) => {
+        setCode(code);
+      }
+    );
+    return () => {
+      socket.off("initial-code");
+    };
+  }, []);
+
+  // send updates
+  const handleCodeChange = (value) => {
+
+    setCode(value);
+
+    socket.emit(
+      "code-change",
+      {
+        roomId,
+        code: value
+      }
+    );
+
+  };
 
   useEffect(() => {
     const fetchRoomData = async () => {
@@ -86,10 +129,11 @@ function Room() {
     Run
     </button>
 
-    <CodeEditor
-    language={language}
-    code={code}
-    setCode={setCode}
+    <Editor
+      height="500px"
+      language={language}
+      value={code}
+      onChange={handleCodeChange}
     />
 
     <h3>Output</h3>
