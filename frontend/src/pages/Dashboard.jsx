@@ -30,32 +30,54 @@ const navigate = useNavigate();
     };
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <button
-        onClick={handleCreateRoom}
-      >
-        Create Room
-      </button>
+    <div className="auth-page">
+      <div className="terminal-window auth-card">
+        <div className="terminal-header">
+          <div className="terminal-dots">
+            <span className="dot dot-red"></span>
+            <span className="dot dot-amber"></span>
+            <span className="dot dot-green"></span>
+          </div>
+          <span className="terminal-path">~/dashboard</span>
+        </div>
 
-      <hr />
+        <div className="terminal-body">
+          <h1 className="auth-title">
+            <span className="prompt">&gt;</span> Dashboard
+          </h1>
 
-      <input
-        placeholder="Room Code"
-        value={roomCode}
-        onChange={(e)=>
-          setRoomCode(
-            e.target.value
-          )
-        }
-      />
+          <button
+            className="btn btn-primary btn-block"
+            style={{ marginTop: 24 }}
+            onClick={handleCreateRoom}
+          >
+            Create Room
+          </button>
 
-      <button
-        onClick={handleJoinRoom}
-      >
-        Join Room
-      </button>
+          <div className="divider"><span>or join existing</span></div>
 
+          <div className="join-row">
+            <input
+              className="input"
+              placeholder="Room Code"
+              value={roomCode}
+              onChange={(e)=>
+                setRoomCode(
+                  e.target.value
+                )
+              }
+            />
+
+            <button
+              className="btn btn-secondary"
+              onClick={handleJoinRoom}
+            >
+              Join
+            </button>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }

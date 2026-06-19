@@ -175,7 +175,13 @@ function Room() {
   }, [roomId]);
 
   if (!room) {
-    return <h2>Loading...</h2>;
+    return (
+      <div className="room-page room-loading">
+        <span className="loading-prompt">
+          &gt; loading room<span className="blink">_</span>
+        </span>
+      </div>
+    );
   }
 
   const handleRun = async () => {
@@ -192,9 +198,8 @@ function Room() {
   };
 
   return (
-    <div>
-      <h1>Room</h1>
-      <p> Room Code:{" "}{room.room_code} </p>
+    <div className="room-page">
+
       {/* <h3>Members</h3>
       <ul>
         {members.map((member) => (
@@ -204,124 +209,154 @@ function Room() {
         ))}
       </ul> */}
 
-      <h3>Online Users</h3>
-      <ul>
-        {participants.map(
-          (user) => (
+      <div className="room-titlebar">
+        <div className="terminal-dots">
+          <span className="dot dot-red"></span>
+          <span className="dot dot-amber"></span>
+          <span className="dot dot-green"></span>
+        </div>
+        <span className="terminal-path">~/room/{room.room_code}/{user.username}</span>
+        <span className="live-badge">
+          <span className="pulse-dot"></span>
+          LIVE
+        </span>
+      </div>
 
-            <li
-              key={user.socketId}
+      <div className="room-content">
+
+        <div className="editor-panel">
+
+          <div className="editor-toolbar">
+
+            <select
+              className="select"
+              value={language}
+              onChange={(e) => {
+
+                const newLanguage =
+                  e.target.value;
+
+                setLanguage(
+                  newLanguage
+                );
+
+                socket.emit(
+                  "language-change",
+                  {
+                    roomId,
+                    language:
+                      newLanguage
+                  }
+                );
+
+              }}
             >
-              🟢 {user.username}
-            </li>
-          )
-        )}
 
-      </ul>
-      <hr />
+              <option value="javascript">
+                JavaScript
+              </option>
 
-    <select
-        value={language}
-        onChange={(e) => {
+              <option value="python">
+                Python
+              </option>
 
-          const newLanguage =
-            e.target.value;
+              <option value="cpp">
+                C++
+              </option>
 
-          setLanguage(
-            newLanguage
-          );
+              <option value="java">
+                Java
+              </option>
 
-          socket.emit(
-            "language-change",
-            {
-              roomId,
-              language:
-                newLanguage
-            }
-          );
+            </select>
 
-        }}
-      >
+            <button className="btn btn-primary" onClick={handleRun}>
+              Run
+            </button>
 
-    <option value="javascript">
-        JavaScript
-    </option>
+          </div>
 
-    <option value="python">
-        Python
-    </option>
+          <div className="editor-shell">
+            <Editor
+              height="500px"
+              language={language}
+              value={code}
+              onChange={handleCodeChange}
+              theme="vs-dark"
+            />
+          </div>
 
-    <option value="cpp">
-        C++
-    </option>
+          <div className="panel output-panel">
+            <div className="panel-header">Output</div>
+            <pre>{output}</pre>
+          </div>
 
-    <option value="java">
-        Java
-    </option>
+        </div>
 
-    </select>
+        <div className="sidebar">
 
-    <button onClick={handleRun}>
-    Run
-    </button>
+          <div className="panel participants-panel">
+            <div className="panel-header">Online — {participants.length}</div>
+            <ul className="participant-list">
+              {participants.map(
+                (user) => (
+                  <li
+                    key={user.socketId}
+                    className="participant-item"
+                  >
+                    <span className="status-dot"></span>
+                    {user.username}
+                  </li>
+                )
+              )}
+            </ul>
+          </div>
 
-    <Editor
-      height="500px"
-      language={language}
-      value={code}
-      onChange={handleCodeChange}
-    />
+          <div className="panel chat-panel">
+            <div className="panel-header">Chat</div>
 
-    <h3>Output</h3>
-
-    <pre>{output}</pre>
-
-        <div>
-      <h3>Chat</h3>
-
-      <div>
-
-        {messages.map(
-          (msg, index) => (
-
-            <div key={index}>
-
-              <strong>
-                {msg.username}
-              </strong>
-
-              {" : "}
-
-              {msg.message}
-
+            <div className="chat-messages">
+              {messages.map(
+                (msg, index) => (
+                  <div key={index} className="chat-message">
+                    <strong>
+                      {msg.username}
+                    </strong>
+                    {" : "}
+                    {msg.message}
+                  </div>
+                )
+              )}
             </div>
 
-          )
-        )}
+            <div className="chat-input-row">
+              <input
+                className="input"
+                value={message}
+                onChange={(e) =>
+                  setMessage(
+                    e.target.value
+                  )
+                }
+                placeholder="Type message..."
+              />
+
+              <button
+                className="btn btn-primary"
+                onClick={sendMessage}
+              >
+                Send
+              </button>
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
-      <input
-        value={message}
-        onChange={(e) =>
-          setMessage(
-            e.target.value
-          )
-        }
-        placeholder="Type message..."
-      />
-
-      <button
-        onClick={sendMessage}
-      >
-        Send
-      </button>
-
     </div>
-        </div>
-
-    
   );
-}
+  }
 
 export default Room;

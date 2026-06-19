@@ -1,4 +1,4 @@
-.counter {
+/* .counter {
   font-size: 16px;
   padding: 5px 10px;
   border-radius: 5px;
@@ -98,11 +98,6 @@
 #docs {
   border-right: 1px solid var(--border);
 
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
 
 #next-steps ul {
   list-style: none;
@@ -182,3 +177,4 @@
     border-right-color: var(--border);
   }
 }
+} */
